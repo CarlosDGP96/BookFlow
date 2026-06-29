@@ -1,16 +1,15 @@
 package reportes
 
-import "fmt"
+type Resumen struct {
+	TotalUsuarios  int `json:"total_usuarios"`
+	TotalLibros    int `json:"total_libros"`
+	TotalPrestamos int `json:"total_prestamos"`
+}
 
-func MostrarResumen(
-	totalUsuarios int,
-	totalLibros int,
-	totalPrestamos int,
-) {
-
-	fmt.Println("\n===== REPORTE GENERAL =====")
-
-	fmt.Printf("Usuarios registrados: %d\n", totalUsuarios)
-	fmt.Printf("Libros registrados: %d\n", totalLibros)
-	fmt.Printf("Préstamos registrados: %d\n", totalPrestamos)
+func CrearResumen(totalUsuarios int, totalLibros int, totalPrestamos int) Resumen {
+	return Resumen{
+		TotalUsuarios:  totalUsuarios,
+		TotalLibros:    totalLibros,
+		TotalPrestamos: totalPrestamos,
+	}
 }

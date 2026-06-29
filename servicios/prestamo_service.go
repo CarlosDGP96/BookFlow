@@ -10,23 +10,11 @@ type PrestamoService struct {
 	repo interfaces.PrestamoRepositorio
 }
 
-// Constructor del servicio de préstamos.
-func NuevoPrestamoService(
-	repo interfaces.PrestamoRepositorio,
-) *PrestamoService {
-
-	return &PrestamoService{
-		repo: repo,
-	}
+func NuevoPrestamoService(repo interfaces.PrestamoRepositorio) *PrestamoService {
+	return &PrestamoService{repo: repo}
 }
 
-// CrearPrestamo registra un nuevo préstamo.
-func (s *PrestamoService) CrearPrestamo(
-	id int,
-	idUsuario int,
-	idLibro int,
-) error {
-
+func (s *PrestamoService) CrearPrestamo(id int, idUsuario int, idLibro int) error {
 	if idUsuario <= 0 {
 		return errors.New("id de usuario inválido")
 	}
@@ -45,7 +33,6 @@ func (s *PrestamoService) CrearPrestamo(
 	return s.repo.Crear(prestamo)
 }
 
-// ListarPrestamos retorna todos los préstamos.
 func (s *PrestamoService) ListarPrestamos() []modelos.Prestamo {
 	return s.repo.Listar()
 }

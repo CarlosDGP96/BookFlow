@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BookFlow Web</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef3f8;margin:0}
+header{background:#1f4e79;color:#fff;padding:20px;text-align:center}
+main{max-width:1100px;margin:20px auto;padding:10px}
+.card{background:#fff;border-radius:10px;padding:18px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+input,button{padding:8px;width:100%;box-sizing:border-box;margin-top:6px}
+button{background:#1f4e79;color:#fff;border:none;border-radius:6px;cursor:pointer}
+button:hover{background:#2f6aa0}
+#mensaje{font-weight:bold;margin:10px 0}
+.ok{color:green}.err{color:#b00020}
+.item{border:1px solid #ddd;border-radius:8px;padding:10px;margin:8px 0;background:#fafafa}
+.disp{color:green;font-weight:bold}.nodisp{color:red;font-weight:bold}
+</style>
+</head>
+<body>
+<header><h1>📚 BookFlow Web</h1><p>Sistema de Gestión de Libros Electrónicos</p></header>
+<main>
+<div id="mensaje"></div>
+<div class="grid">
+<div class="card">
+<h3>👤 Crear Usuario</h3>
+<input id="nombre" placeholder="Nombre">
+<input id="correo" placeholder="Correo">
+<button onclick="crearUsuario()">Crear Usuario</button>
+</div>
+<div class="card">
+<h3>📘 Registrar Libro</h3>
+<input id="titulo" placeholder="Título">
+<input id="autor" placeholder="Autor">
+<input id="categoria" placeholder="Categoría">
+<button onclick="crearLibro()">Registrar Libro</button>
+</div>
+<div class="card">
+<h3>📖 Registrar Préstamo</h3>
+<input id="idUsuario" type="number" placeholder="ID Usuario">
+<input id="idLibro" type="number" placeholder="ID Libro">
+<button onclick="crearPrestamo()">Registrar Préstamo</button>
+</div>
+</div>
+
+<div class="card">
+<button onclick="listarUsuarios()">Usuarios</button>
+<button onclick="listarLibros()">Libros</button>
+<button onclick="listarPrestamos()">Préstamos</button>
+<button onclick="mostrarReporte()">Reporte</button>
+<button onclick="demoConcurrencia()">Concurrencia</button>
+</div>
+
+<div class="card">
+<h3>Resultado</h3>
+<div id="resultado"></div>
+</div>
+</main>
+
+<script>
+function msg(txt,ok=true){
+ let m=document.getElementById("mensaje");
+ m.className=ok?"ok":"err";
+ m.textContent=txt;
+}
+function limpiar(ids){ids.forEach(i=>document.getElementById(i).value="");}
+
+async function post(url,obj){
+ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(obj)});
+ const d=await r.json();
+ if(r.ok){msg("Operación realizada correctamente.");}
+ else{msg(d.error||"Error",false);}
+ return d;
+}
+
+async function crearUsuario(){
+ await post("/api/usuarios",{nombre:nombre.value,correo:correo.value});
+ limpiar(["nombre","correo"]);
+}
+async function crearLibro(){
+ await post("/api/libros",{titulo:titulo.value,autor:autor.value,categoria:categoria.value});
+ limpiar(["titulo","autor","categoria"]);
+}
+async function crearPrestamo(){
+ await post("/api/prestamos",{id_usuario:Number(idUsuario.value),id_libro:Number(idLibro.value)});
+ limpiar(["idUsuario","idLibro"]);
+}
+
+function tarjeta(html){return `<div class="item">${html}</div>`;}
+
+async function listarUsuarios(){
+ const d=await (await fetch("/api/usuarios")).json();
+ resultado.innerHTML=d.map(u=>tarjeta(`<b>👤 Usuario #${u.id}</b><br>Nombre: ${u.nombre}<br>Correo: ${u.correo}`)).join("");
+}
+async function listarLibros(){
+ const d=await (await fetch("/api/libros")).json();
+ resultado.innerHTML=d.map(l=>tarjeta(`<b>📘 Libro #${l.id}</b><br>Título: ${l.titulo}<br>Autor: ${l.autor}<br>Categoría: ${l.categoria}<br>Estado: <span class="${l.disponible?'disp':'nodisp'}">${l.disponible?'🟢 Disponible':'🔴 Prestado'}</span>`)).join("");
+}
+async function listarPrestamos(){
+ const d=await (await fetch("/api/prestamos")).json();
+ resultado.innerHTML=d.map(p=>tarjeta(`<b>📖 Préstamo #${p.id}</b><br>Usuario: ${p.id_usuario}<br>Libro: ${p.id_libro}<br>Estado: ${p.estado}`)).join("");
+}
+async function mostrarReporte(){
+ const d=await (await fetch("/api/reportes")).json();
+ resultado.innerHTML=tarjeta(`<h3>📊 Reporte General</h3>Usuarios: ${d.total_usuarios}<br>Libros: ${d.total_libros}<br>Préstamos: ${d.total_prestamos}`);
+}
+async function demoConcurrencia(){
+ const d=await (await fetch("/api/concurrencia")).json();
+ resultado.innerHTML=tarjeta(`<h3>⚙️ Concurrencia</h3>${d.mensaje}`);
+}
+</script>
+</body>
+</html>
